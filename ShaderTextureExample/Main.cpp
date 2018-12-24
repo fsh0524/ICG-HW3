@@ -144,18 +144,11 @@ void init() {
 }
 
 void lights() {
-	// glEnable(GL_LIGHTING);
 	GLfloat light_x = light_r * cos(light_rev / 180.0 * PI);
 	GLfloat light_z = light_r * sin(light_rev / 180.0 * PI);
 	GLfloat light_position[] = { light_x, 0, light_z };
 	GLint lightLoc = glGetUniformLocation(program, "lightPos");
 	glUniform3fv(lightLoc, 1, light_position);
-	// GLfloat light_diffuse[] = { 1, 1, 1, 1 };
-	// GLfloat light_ambient[] = { 0.5, 0.5, 0.5, 1 };
-	// glEnable(GL_LIGHT0);
-	// glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-	// glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-	// glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 }
 
 void display()
@@ -193,7 +186,9 @@ void display()
 	glGetFloatv(GL_MODELVIEW_MATRIX, mmtx);
 	GLint pmatLoc = glGetUniformLocation(program, "Projection");
 	GLint mmatLoc = glGetUniformLocation(program, "model");
-	GLint texLoc = glGetUniformLocation(program, "diffuseMap");
+	GLint texLoc = glGetUniformLocation(program, "textureMap");
+	GLint normLoc = glGetUniformLocation(program, "normalMap");
+	GLint specLoc = glGetUniformLocation(program, "specularMap");
 
 	glEnable(GL_TEXTURE_2D);
 
@@ -204,7 +199,13 @@ void display()
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, earth_texture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, earth_normal);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, earth_specular);
 	glUniform1i(texLoc, 0);
+	glUniform1i(normLoc, 1);
+	glUniform1i(specLoc, 2);
 
 	glDrawArrays(GL_TRIANGLES, 0, 360 * 180 * 6);
 	glBindTexture(GL_TEXTURE_2D, NULL);
@@ -255,6 +256,8 @@ void LoadTexture(char* pFilename, unsigned int &textObj) {
 	float fLargest;
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &fLargest);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, fLargest);
+
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
