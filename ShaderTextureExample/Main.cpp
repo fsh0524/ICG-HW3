@@ -26,9 +26,9 @@ const GLfloat light_r = 3;
 const GLfloat light_rev_speed = X / 10.0;
 
 int pause = 0;
-int texture_on = 0;
-int normal_on = 0;
-int specular_on = 0;
+int texture_on = 1;
+int normal_on = 1;
+int specular_on = 1;
 GLdouble earth_rot = 0;
 GLfloat light_rev = 0;
 unsigned int earth_texture;
@@ -51,7 +51,7 @@ VertexAttribute *mySphere(int slice, int stack) {
 	VertexAttribute *buf = new VertexAttribute[slice * stack * 6];
 	int buf_size = 0;
 	int direction[4][2] = { { 0, 0 },{ 1, 0 },{ 0, 1 },{ 1, 1 } };
-	int index[6] = { 2, 1, 0, 2, 3, 1 };
+	int index[6] = { 0, 1, 2, 1, 3, 2 };
 	float slice_step = 2 * PI / slice, stack_step = PI / stack;
 	for (int i = 0; i < slice; i++) {
 		// glBegin(GL_TRIANGLES);
@@ -76,13 +76,14 @@ VertexAttribute *mySphere(int slice, int stack) {
 }
 
 void idle() {
-	if (pause) return;
-	earth_rot += earth_rot_speed;
-	while (earth_rot >= 360.0)
-		earth_rot -= 360.0;
-	light_rev += light_rev_speed;
-	while (light_rev >= 360.0)
-		light_rev -= 360.0;
+	if (pause == 0) {
+		earth_rot += earth_rot_speed;
+		while (earth_rot >= 360.0)
+			earth_rot -= 360.0;
+		light_rev += light_rev_speed;
+		while (light_rev >= 360.0)
+			light_rev -= 360.0;
+	}
 	glutPostRedisplay();
 }
 
@@ -173,24 +174,36 @@ void display()
 		0.0f, 1.0f, 0.0f);// up
 
 	GLint pmatLoc = glGetUniformLocation(program, "Projection");
+	GLint opmatLoc = glGetUniformLocation(program, "oProjection");
 	GLint mmatLoc = glGetUniformLocation(program, "model");
+	GLint ommatLoc = glGetUniformLocation(program, "omodel");
 	GLint texLoc = glGetUniformLocation(program, "textureMap");
 	GLint normLoc = glGetUniformLocation(program, "normalMap");
 	GLint specLoc = glGetUniformLocation(program, "specularMap");
+	GLint texonLoc = glGetUniformLocation(program, "texture_on");
+	GLint normonLoc = glGetUniformLocation(program, "normal_on");
+	GLint speconLoc = glGetUniformLocation(program, "specular_on");
+
+	GLfloat pmtx[16];
+	GLfloat mmtx[16];
 
 	glEnable(GL_TEXTURE_2D);
 
 	glUseProgram(program);
 
+	glUniform1i(texonLoc, texture_on);
+	glUniform1i(normonLoc, normal_on);
+	glUniform1i(speconLoc, specular_on);
+
 	lights();
 	GLint viewLoc = glGetUniformLocation(program, "viewPos");
 	glUniform3f(viewLoc, 0.0f, 0.0f, 3.0f);
 
+	glPushMatrix();
+	
 	glRotated(-23.5, 0, 0, 1);
 	glRotated(earth_rot, 0, 1, 0);
 
-	GLfloat pmtx[16];
-	GLfloat mmtx[16];
 	glGetFloatv(GL_PROJECTION_MATRIX, pmtx);
 	glGetFloatv(GL_MODELVIEW_MATRIX, mmtx);
 	glUniformMatrix4fv(pmatLoc, 1, GL_FALSE, pmtx);
@@ -212,6 +225,14 @@ void display()
 
 	glDrawArrays(GL_TRIANGLES, 0, 360 * 180 * 6);
 	glBindTexture(GL_TEXTURE_2D, NULL);
+
+	glPopMatrix();
+
+	glGetFloatv(GL_PROJECTION_MATRIX, pmtx);
+	glGetFloatv(GL_MODELVIEW_MATRIX, mmtx);
+	glUniformMatrix4fv(opmatLoc, 1, GL_FALSE, pmtx);
+	glUniformMatrix4fv(ommatLoc, 1, GL_FALSE, mmtx);
+
 	glUseProgram(0);
 
 	glutSwapBuffers();
@@ -253,6 +274,8 @@ void LoadTexture(char* pFilename, unsigned int &textObj) {
 		0, GL_BGRA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(p32BitsImage));
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);

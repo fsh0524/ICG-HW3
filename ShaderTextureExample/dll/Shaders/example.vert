@@ -15,7 +15,7 @@ void main() {
 	gl_Position = Projection * model * vec4(pos, 1.0);
 	
 	geom_pos = vec3(model * vec4(pos, 1.0));
-	geom_norm = normalize(normal);
+	geom_norm = normalize(vec3(model * vec4(normal, 0.0)));
 	geom_tex = texcoord;
 	
 }

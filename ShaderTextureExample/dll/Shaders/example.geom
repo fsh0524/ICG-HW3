@@ -16,6 +16,10 @@ out vec3 frag_bitangent;
 
 uniform vec3 viewPos;
 uniform vec3 lightPos;
+uniform mat4 model;
+uniform mat4 omodel;
+uniform mat4 oProjection;
+uniform mat4 Projection;
 
 void main() {
 	vec3 edge1 = geom_pos[1] - geom_pos[0];
@@ -35,8 +39,8 @@ void main() {
 		texcoord = geom_tex[i];
 		frag_normal = geom_norm[i];
 		frag_bitangent = cross(frag_normal, frag_tangent);
-		light = normalize(lightPos - geom_pos[i]);
-		view = normalize(viewPos - geom_pos[i]);
+		light = normalize(vec3(omodel * vec4(lightPos, 1.0)) - geom_pos[i]);
+		view = normalize(vec3(vec4(viewPos, 1.0)) - geom_pos[i]);
 		EmitVertex();
 	}
 	EndPrimitive();
