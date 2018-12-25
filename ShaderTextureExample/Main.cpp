@@ -16,7 +16,7 @@ struct VertexAttribute {
 
 int width = 800;
 int height = 600;
-const GLdouble X = 0.5;
+const GLdouble X = 1;
 const int earth_slices = 360;
 const int earth_stacks = 180;
 const int buffer_size = earth_slices * earth_stacks * 6;
@@ -146,9 +146,8 @@ void init() {
 void lights() {
 	GLfloat light_x = light_r * cos(light_rev / 180.0 * PI);
 	GLfloat light_z = light_r * sin(light_rev / 180.0 * PI);
-	GLfloat light_position[] = { light_x, 0, light_z };
 	GLint lightLoc = glGetUniformLocation(program, "lightPos");
-	glUniform3fv(lightLoc, 1, light_position);
+	glUniform3f(lightLoc, light_x, 0.0, light_z);
 }
 
 void display()
@@ -169,13 +168,9 @@ void display()
 	// viewing and modeling transformation
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	lights();
 	gluLookAt(0.0f, 0.0f, 3.0f,// eye
 		0.0f, 0.0f, 0.0f,// center
 		0.0f, 1.0f, 0.0f);// up
-
-	GLint viewLoc = glGetUniformLocation(program, "viewPos");
-	glUniform3f(viewLoc, 0.0f, 0.0f, 3.0f);
 
 	glRotated(-23.5, 0, 0, 1);
 	glRotated(earth_rot, 0, 1, 0);
@@ -194,8 +189,16 @@ void display()
 
 	glUseProgram(program);
 
+	lights();
+	GLint viewLoc = glGetUniformLocation(program, "viewPos");
+	glUniform3f(viewLoc, 0.0f, 0.0f, 3.0f);
+
 	glUniformMatrix4fv(pmatLoc, 1, GL_FALSE, pmtx);
 	glUniformMatrix4fv(mmatLoc, 1, GL_FALSE, mmtx);
+
+	// float tmp[16];
+	// glGetnUniformfv(program, pmatLoc, sizeof(GLfloat) * 16, tmp);
+	// cerr << "DEBUG: "; for (int i = 0; i < 16; ++i) cerr << tmp[i] << ", "; cerr << endl;
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, earth_texture);

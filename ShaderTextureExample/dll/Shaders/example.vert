@@ -10,12 +10,14 @@ out vec2 geom_tex;
 
 uniform mat4 Projection;
 uniform mat4 model;
+uniform vec3 viewPos;
+uniform vec3 lightPos;
 
 void main() {
 	gl_Position = Projection * model * vec4(pos, 1.0);
 	
-	geom_pos = gl_Position.xyz;
-	geom_norm = normal;
+	geom_pos = vec3(model * vec4(pos, 1.0));
+	geom_norm = normalize(normal);
 	geom_tex = texcoord;
 	
 }
