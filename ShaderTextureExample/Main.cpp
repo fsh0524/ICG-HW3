@@ -172,13 +172,6 @@ void display()
 		0.0f, 0.0f, 0.0f,// center
 		0.0f, 1.0f, 0.0f);// up
 
-	glRotated(-23.5, 0, 0, 1);
-	glRotated(earth_rot, 0, 1, 0);
-
-	GLfloat pmtx[16];
-	GLfloat mmtx[16];
-	glGetFloatv(GL_PROJECTION_MATRIX, pmtx);
-	glGetFloatv(GL_MODELVIEW_MATRIX, mmtx);
 	GLint pmatLoc = glGetUniformLocation(program, "Projection");
 	GLint mmatLoc = glGetUniformLocation(program, "model");
 	GLint texLoc = glGetUniformLocation(program, "textureMap");
@@ -193,6 +186,13 @@ void display()
 	GLint viewLoc = glGetUniformLocation(program, "viewPos");
 	glUniform3f(viewLoc, 0.0f, 0.0f, 3.0f);
 
+	glRotated(-23.5, 0, 0, 1);
+	glRotated(earth_rot, 0, 1, 0);
+
+	GLfloat pmtx[16];
+	GLfloat mmtx[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, pmtx);
+	glGetFloatv(GL_MODELVIEW_MATRIX, mmtx);
 	glUniformMatrix4fv(pmatLoc, 1, GL_FALSE, pmtx);
 	glUniformMatrix4fv(mmatLoc, 1, GL_FALSE, mmtx);
 
